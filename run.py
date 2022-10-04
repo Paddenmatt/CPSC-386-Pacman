@@ -3,6 +3,8 @@ from pygame.locals import *
 from constants import *
 from pacman import Pacman
 from nodes import NodeGroup
+from pellets import PelletGroup
+from ghosts import Ghost
 
 
 class GameController(object):
@@ -21,14 +23,19 @@ class GameController(object):
     def startGame(self):
         """Starts Pacman game"""
         self.setBackground()
-        self.nodes = NodeGroup()
-        self.nodes.setupTestNodes()
-        self.pacman = Pacman()
+        self.nodes = NodeGroup("maze1.txt")
+        self.nodes.setPortalPair((0, 17), (27, 17))     # Connects two Nodes as a Portal
+        self.pacman = Pacman(self.nodes.getStartTempNode())
+        self.pellets = PelletGroup("maze1.txt")
+        self.ghost = Ghost(self.nodes.getStartTempNode())
 
     def update(self):
         """Game loop called once per frame of the game"""
         dt = self.clock.tick(30) / 1000.0
-        self.pacman.update(dt)
+        self.pacman.update(dt)      # Updates Pacman
+        self.ghost.update(dt)       # Updates Ghosts
+        self.pellets.update(dt)     # Updates Pellets
+        self.checkPelletEvents()
         self.checkEvents()
         self.render()
 
@@ -41,9 +48,18 @@ class GameController(object):
     def render(self):
         """Draws the images onto the screen"""
         self.screen.blit(self.background, (0, 0))
-        self.nodes.render(self.screen)
-        self.pacman.render(self.screen)
+        self.nodes.render(self.screen)      # Draws the Nodes onto the screen
+        self.pellets.render(self.screen)    # Draws the Pellets onto the screen
+        self.pacman.render(self.screen)     # Draws Pacman onto the screen
+        self.ghost.render(self.screen)      # Draws the Ghosts onto the screen
         pygame.display.update()
+
+    def checkPelletEvents(self):
+        """Handles all the Pellet events"""
+        pellet = self.pacman.eatPellets(self.pellets.pelletList)
+        if pellet:
+            self.pellets.numEaten += 1
+            self.pellets.pelletList.remove(pellet)
 
 
 if __name__ == "__main__":
