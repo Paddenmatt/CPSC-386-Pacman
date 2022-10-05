@@ -10,18 +10,25 @@ class Entity(object):
     def __init__(self, node):
         """Initialize class variables"""
         self.name = None
-        self.directions = {UP: Vector2(0, -1), DOWN: Vector2(0, 1),
-                           LEFT: Vector2(-1, 0), RIGHT: Vector2(1, 0), STOP: Vector2()}
+        self.directions = {UP:Vector2(0, -1),DOWN:Vector2(0, 1),
+                          LEFT:Vector2(-1, 0), RIGHT:Vector2(1, 0), STOP:Vector2()}
         self.direction = STOP
-        self.setSpeed(100)
+        self.speed = 100
         self.radius = 10
         self.collideRadius = 5
         self.color = WHITE
-        self.node = node
-        self.setPosition()
-        self.target = node
         self.visible = True
         self.disablePortal = False
+        self.goal = None
+        self.directionMethod = self.randomDirection
+        self.setStartNode(node)
+
+    def setStartNode(self, node):
+        """Defines a starting node"""
+        self.node = node
+        self.startNode = node
+        self.target = node
+        self.setPosition()
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
@@ -30,7 +37,7 @@ class Entity(object):
         if self.overshotTarget():
             self.node = self.target
             directions = self.validDirections()
-            direction = self.randomDirection(directions)
+            direction = self.directionMethod(directions)
             if not self.disablePortal:
                 if self.node.neighbors[PORTAL] is not None:
                     self.node = self.node.neighbors[PORTAL]
@@ -49,8 +56,9 @@ class Entity(object):
     def validDirection(self, direction):
         """Checks if the pressed key is a valid direction"""
         if direction is not STOP:
-            if self.node.neighbors[direction] is not None:
-                return True
+            if self.name in self.node.access[direction]:
+                if self.node.neighbors[direction] is not None:
+                    return True
         return False
 
     def getNewTarget(self, direction):
@@ -108,3 +116,26 @@ class Entity(object):
     def randomDirection(self, directions):
         """Chooses one of the directions randomly"""
         return directions[randint(0, len(directions)-1)]
+
+    def goalDirection(self, directions):
+        """Gives the Entity a 'Goal' to head towards"""
+        # REPLACE AND IMPLEMENT A* ALGORITHM HERE
+        distances = []
+        for direction in directions:
+            vec = self.node.position  + self.directions[direction]*TILEWIDTH - self.goal
+            distances.append(vec.magnitudeSquared())
+        index = distances.index(min(distances))
+        return directions[index]
+
+    def setBetweenNodes(self, direction):
+        """Set any entity between 2 nodes"""
+        if self.node.neighbors[direction] is not None:
+            self.target = self.node.neighbors[direction]
+            self.position = (self.node.position + self.target.position) / 2.0
+
+    def reset(self):
+        """Reset some level components if Pacman dies"""
+        self.setStartNode(self.startNode)
+        self.direction = STOP
+        self.speed = 100
+        self.visible = True

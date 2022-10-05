@@ -8,9 +8,11 @@ from entity import Entity
 class Pacman(Entity):
     def __init__(self, node):
         """Initialize class variables"""
-        Entity.__init__(self, node )
+        Entity.__init__(self, node)
         self.name = PACMAN
         self.color = YELLOW
+        self.direction = LEFT
+        self.setBetweenNodes(LEFT)
         self.directions = {STOP: Vector2(), UP: Vector2(0, -1), DOWN: Vector2(0, 1), LEFT: Vector2(-1, 0),
                            RIGHT: Vector2(1, 0)}
         self.direction = STOP
@@ -20,6 +22,19 @@ class Pacman(Entity):
         self.setPosition()
         self.target = node
         self.collideRadius = 5
+        self.alive = True
+
+    def reset(self):
+        """Resets Pacman"""
+        Entity.reset(self)
+        self.direction = LEFT
+        self.setBetweenNodes(LEFT)
+        self.alive = True
+
+    def die(self):
+        """Kill Pacman"""
+        self.alive = False
+        self.direction = STOP
 
     def setPosition(self):
         """Sets the position of Pacman"""
@@ -107,9 +122,19 @@ class Pacman(Entity):
         """If Pacman collides with a pellet, then we just return that pellet.
         If Pacman isn't colliding with any pellets, return None"""
         for pellet in pelletList:
-            d = self.position - pellet.position
-            dSquared = d.magnitudeSquared()
-            rSquared = (pellet.radius+self.collideRadius)**2
-            if dSquared <= rSquared:
+            if self.collideCheck(pellet):
                 return pellet
         return None
+
+    def collideGhost(self, ghost):
+        """Check if Pacman is colliding with the Ghost"""
+        return self.collideCheck(ghost)
+
+    def collideCheck(self, other):
+        """Check if Pacman is colliding with the Ghost"""
+        d = self.position - other.position
+        dSquared = d.magnitudeSquared()
+        rSquared = (self.collideRadius + other.collideRadius)**2
+        if dSquared <= rSquared:
+            return True
+        return False

@@ -9,6 +9,11 @@ class Node(object):
         """Initialize class variables"""
         self.position = Vector2(x, y)
         self.neighbors = {UP: None, DOWN: None, LEFT: None, RIGHT: None, PORTAL:None}
+        # The values of the keys are the entities that have access to travel in that direction
+        self.access = {UP: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
+                       DOWN: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
+                       LEFT: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
+                       RIGHT: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT]}
 
     def render(self, screen):
         """Draws a single Node onto the screen"""
@@ -18,6 +23,16 @@ class Node(object):
                 line_end = self.neighbors[n].position.asTuple()
                 pygame.draw.line(screen, WHITE, line_start, line_end, 4)
                 pygame.draw.circle(screen, RED, self.position.asInt(), 12)
+
+    def denyAccess(self, direction, entity):
+        """Restrict entity from moving in any direction"""
+        if entity.name in self.access[direction]:
+            self.access[direction].remove(entity.name)
+
+    def allowAccess(self, direction, entity):
+        """Allow entity to move in any direction"""
+        if entity.name not in self.access[direction]:
+            self.access[direction].append(entity.name)
 
 
 class NodeGroup(object):
@@ -32,6 +47,27 @@ class NodeGroup(object):
         self.createNodeTable(data)
         self.connectHorizontally(data)
         self.connectVertically(data)
+        self.homekey = None
+
+    def createHomeNodes(self, xoffset, yoffset):
+        """Creates the Ghost's home"""
+        homedata = np.array([['X','X','+','X','X'],
+                             ['X','X','.','X','X'],
+                             ['+','X','.','X','+'],
+                             ['+','.','+','.','+'],
+                             ['+','X','X','X','+']])
+
+        self.createNodeTable(homedata, xoffset, yoffset)
+        self.connectHorizontally(homedata, xoffset, yoffset)
+        self.connectVertically(homedata, xoffset, yoffset)
+        self.homekey = self.constructKey(xoffset+2, yoffset)
+        return self.homekey
+
+    def connectHomeNodes(self, homekey, otherkey, direction):
+        """Connects the topmost node to any other node"""
+        key = self.constructKey(*otherkey)
+        self.nodesLUT[homekey].neighbors[direction] = self.nodesLUT[key]
+        self.nodesLUT[key].neighbors[direction * -1] = self.nodesLUT[homekey]
 
     def readMazeFile(self, textfile):
         """Read in the Maze text file"""
@@ -114,3 +150,43 @@ class NodeGroup(object):
         """Draws all the Nodes onto the screen"""
         for node in self.nodesLUT.values():
             node.render(screen)
+
+    def denyAccess(self, col, row, direction, entity):
+        """Restrict entity from moving in any direction"""
+        node = self.getNodeFromTiles(col, row)
+        if node is not None:
+            node.denyAccess(direction, entity)
+
+    def allowAccess(self, col, row, direction, entity):
+        """Allow entity to move in any direction"""
+        node = self.getNodeFromTiles(col, row)
+        if node is not None:
+            node.allowAccess(direction, entity)
+
+    def denyAccessList(self, col, row, direction, entities):
+        """List of restricted locations per entity"""
+        for entity in entities:
+            self.denyAccess(col, row, direction, entity)
+
+    def allowAccessList(self, col, row, direction, entities):
+        """List of allowed locations per entity"""
+        for entity in entities:
+            self.allowAccess(col, row, direction, entity)
+
+    def denyHomeAccess(self, entity):
+        """Deny access of entity to access home"""
+        self.nodesLUT[self.homekey].denyAccess(DOWN, entity)
+
+    def allowHomeAccess(self, entity):
+        """Allow access of entity to access home"""
+        self.nodesLUT[self.homekey].allowAccess(DOWN, entity)
+
+    def denyHomeAccessList(self, entities):
+        """List of restricted entities to access home"""
+        for entity in entities:
+            self.denyHomeAccess(entity)
+
+    def allowHomeAccessList(self, entities):
+        """List of allowed entities to access home"""
+        for entity in entities:
+            self.allowHomeAccess(entity)
