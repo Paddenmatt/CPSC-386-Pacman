@@ -5,7 +5,7 @@ class Pause(object):
         self.timer = 0
         self.pauseTime = None
         self.func = None
-
+        
     def update(self, dt):
         """Game loop called once per frame of the game"""
         if self.pauseTime is not None:

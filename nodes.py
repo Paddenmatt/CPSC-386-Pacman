@@ -8,21 +8,12 @@ class Node(object):
     def __init__(self, x, y):
         """Initialize class variables"""
         self.position = Vector2(x, y)
-        self.neighbors = {UP: None, DOWN: None, LEFT: None, RIGHT: None, PORTAL:None}
         # The values of the keys are the entities that have access to travel in that direction
-        self.access = {UP: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
-                       DOWN: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
-                       LEFT: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
-                       RIGHT: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT]}
-
-    def render(self, screen):
-        """Draws a single Node onto the screen"""
-        for n in self.neighbors.keys():
-            if self.neighbors[n] is not None:
-                line_start = self.position.asTuple()
-                line_end = self.neighbors[n].position.asTuple()
-                pygame.draw.line(screen, WHITE, line_start, line_end, 4)
-                pygame.draw.circle(screen, RED, self.position.asInt(), 12)
+        self.neighbors = {UP:None, DOWN:None, LEFT:None, RIGHT:None, PORTAL:None}
+        self.access = {UP:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT], 
+                       DOWN:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT], 
+                       LEFT:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT], 
+                       RIGHT:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT]}
 
     def denyAccess(self, direction, entity):
         """Restrict entity from moving in any direction"""
@@ -33,6 +24,15 @@ class Node(object):
         """Allow entity to move in any direction"""
         if entity.name not in self.access[direction]:
             self.access[direction].append(entity.name)
+
+    def render(self, screen):
+        """Draws a single Node onto the screen"""
+        for n in self.neighbors.keys():
+            if self.neighbors[n] is not None:
+                line_start = self.position.asTuple()
+                line_end = self.neighbors[n].position.asTuple()
+                pygame.draw.line(screen, WHITE, line_start, line_end, 4)
+                pygame.draw.circle(screen, RED, self.position.asInt(), 12)
 
 
 class NodeGroup(object):
@@ -48,26 +48,6 @@ class NodeGroup(object):
         self.connectHorizontally(data)
         self.connectVertically(data)
         self.homekey = None
-
-    def createHomeNodes(self, xoffset, yoffset):
-        """Creates the Ghost's home"""
-        homedata = np.array([['X','X','+','X','X'],
-                             ['X','X','.','X','X'],
-                             ['+','X','.','X','+'],
-                             ['+','.','+','.','+'],
-                             ['+','X','X','X','+']])
-
-        self.createNodeTable(homedata, xoffset, yoffset)
-        self.connectHorizontally(homedata, xoffset, yoffset)
-        self.connectVertically(homedata, xoffset, yoffset)
-        self.homekey = self.constructKey(xoffset+2, yoffset)
-        return self.homekey
-
-    def connectHomeNodes(self, homekey, otherkey, direction):
-        """Connects the topmost node to any other node"""
-        key = self.constructKey(*otherkey)
-        self.nodesLUT[homekey].neighbors[direction] = self.nodesLUT[key]
-        self.nodesLUT[key].neighbors[direction * -1] = self.nodesLUT[homekey]
 
     def readMazeFile(self, textfile):
         """Read in the Maze text file"""
@@ -120,19 +100,6 @@ class NodeGroup(object):
                 elif dataT[col][row] not in self.pathSymbols:
                     key = None
 
-    def getNodeFromPixels(self, xpixel, ypixel):
-        """Gets a node from the (x, y) pixel location"""
-        if (xpixel, ypixel) in self.nodesLUT.keys():
-            return self.nodesLUT[(xpixel, ypixel)]
-        return None
-
-    def getNodeFromTiles(self, col, row):
-        """Gets a node from the (column, row) pixel location"""
-        x, y = self.constructKey(col, row)
-        if (x, y) in self.nodesLUT.keys():
-            return self.nodesLUT[(x, y)]
-        return None
-
     def getStartTempNode(self):
         nodes = list(self.nodesLUT.values())
         return nodes[0]
@@ -146,10 +113,38 @@ class NodeGroup(object):
             self.nodesLUT[key1].neighbors[PORTAL] = self.nodesLUT[key2]
             self.nodesLUT[key2].neighbors[PORTAL] = self.nodesLUT[key1]
 
-    def render(self, screen):
-        """Draws all the Nodes onto the screen"""
-        for node in self.nodesLUT.values():
-            node.render(screen)
+    def createHomeNodes(self, xoffset, yoffset):
+        """Creates the Ghost's home"""
+        homedata = np.array([['X','X','+','X','X'],
+                             ['X','X','.','X','X'],
+                             ['+','X','.','X','+'],
+                             ['+','.','+','.','+'],
+                             ['+','X','X','X','+']])
+
+        self.createNodeTable(homedata, xoffset, yoffset)
+        self.connectHorizontally(homedata, xoffset, yoffset)
+        self.connectVertically(homedata, xoffset, yoffset)
+        self.homekey = self.constructKey(xoffset+2, yoffset)
+        return self.homekey
+
+    def connectHomeNodes(self, homekey, otherkey, direction):
+        """Connects the topmost node to any other node"""
+        key = self.constructKey(*otherkey)
+        self.nodesLUT[homekey].neighbors[direction] = self.nodesLUT[key]
+        self.nodesLUT[key].neighbors[direction*-1] = self.nodesLUT[homekey]
+
+    def getNodeFromPixels(self, xpixel, ypixel):
+        """Gets a node from the (x, y) pixel location"""
+        if (xpixel, ypixel) in self.nodesLUT.keys():
+            return self.nodesLUT[(xpixel, ypixel)]
+        return None
+
+    def getNodeFromTiles(self, col, row):
+        """Gets a node from the (column, row) pixel location"""
+        x, y = self.constructKey(col, row)
+        if (x, y) in self.nodesLUT.keys():
+            return self.nodesLUT[(x, y)]
+        return None
 
     def denyAccess(self, col, row, direction, entity):
         """Restrict entity from moving in any direction"""
@@ -178,7 +173,7 @@ class NodeGroup(object):
         self.nodesLUT[self.homekey].denyAccess(DOWN, entity)
 
     def allowHomeAccess(self, entity):
-        """Allow access of entity to access home"""
+        """Deny access of entity to access home"""
         self.nodesLUT[self.homekey].allowAccess(DOWN, entity)
 
     def denyHomeAccessList(self, entities):
@@ -190,3 +185,8 @@ class NodeGroup(object):
         """List of allowed entities to access home"""
         for entity in entities:
             self.allowHomeAccess(entity)
+
+    def render(self, screen):
+        """Draws all the Nodes onto the screen"""
+        for node in self.nodesLUT.values():
+            node.render(screen)

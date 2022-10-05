@@ -36,30 +36,24 @@ class ModeController(object):
         self.time = None
         self.mainmode = MainMode()
         self.current = self.mainmode.mode
-        self.entity = entity
+        self.entity = entity 
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
         self.mainmode.update(dt)
-        # Manages Freight mode
         if self.current is FREIGHT:
             self.timer += dt
             if self.timer >= self.time:
                 self.time = None
                 self.entity.normalMode()
                 self.current = self.mainmode.mode
-            elif self.current in [SCATTER, CHASE]:
+        elif self.current in [SCATTER, CHASE]:
+            self.current = self.mainmode.mode
+
+        if self.current is SPAWN:
+            if self.entity.node == self.entity.spawnNode:
+                self.entity.normalMode()
                 self.current = self.mainmode.mode
-
-            if self.current is SPAWN:
-                if self.entity.node == self.entity.spawnNode:
-                    self.entity.normalMode()
-                    self.current = self.mainmode.mode
-
-    def setSpawnMode(self):
-        """Set the current mode to SPAWN only if the ghost is in FREIGHT mode"""
-        if self.current is FREIGHT:
-            self.current = SPAWN
 
     def setFreightMode(self):
         """Controls the settings of Freight mode"""
@@ -69,3 +63,8 @@ class ModeController(object):
             self.current = FREIGHT
         elif self.current is FREIGHT:
             self.timer = 0
+
+    def setSpawnMode(self):
+        """Set the current mode to SPAWN only if the ghost is in FREIGHT mode"""
+        if self.current is FREIGHT:
+            self.current = SPAWN

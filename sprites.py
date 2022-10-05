@@ -12,12 +12,12 @@ class Spritesheet(object):
     def __init__(self):
         """Initialize class variables"""
         self.sheet = pygame.image.load("spritesheet.png").convert()
-        transcolor = self.sheet.get_at((0, 0))
+        transcolor = self.sheet.get_at((0,0))
         self.sheet.set_colorkey(transcolor)
         width = int(self.sheet.get_width() / BASETILEWIDTH * TILEWIDTH)
         height = int(self.sheet.get_height() / BASETILEHEIGHT * TILEHEIGHT)
         self.sheet = pygame.transform.scale(self.sheet, (width, height))
-
+        
     def getImage(self, x, y, width, height):
         """Extracts an image from the spritesheet and returns it to whoever is asking for it"""
         x *= TILEWIDTH
@@ -28,32 +28,22 @@ class Spritesheet(object):
 
 class PacmanSprites(Spritesheet):
     """Contains references to all the Pacman sprites"""
-
     def __init__(self, entity):
         """Initialize class variables"""
         Spritesheet.__init__(self)
         self.entity = entity
-        self.entity.image = self.getStartImage()
+        self.entity.image = self.getStartImage()         
         self.animations = {}
         self.defineAnimations()
         self.stopimage = (8, 0)
 
-    def getStartImage(self):
-        """Starting image for Pacman"""
-        return self.getImage(8, 0)
-
-    def getImage(self, x, y):
-        """Retrieves an images from the spritesheet"""
-        return Spritesheet.getImage(self, x, y, 2 * TILEWIDTH, 2 * TILEHEIGHT)
-
     def defineAnimations(self):
         """Sets Pacman's animations for each direction"""
-        self.animations[LEFT] = Animator(((8, 0), (0, 0), (0, 2), (0, 0)))
-        self.animations[RIGHT] = Animator(((10, 0), (2, 0), (2, 2), (2, 0)))
-        self.animations[UP] = Animator(((10, 2), (6, 0), (6, 2), (6, 0)))
-        self.animations[DOWN] = Animator(((8, 2), (4, 0), (4, 2), (4, 0)))
-        self.animations[DEATH] = Animator(((0, 12), (2, 12), (4, 12), (6, 12), (8, 12), (10, 12), (12, 12), (14, 12),
-                                           (16, 12), (18, 12), (20, 12)), speed=6, loop=False)
+        self.animations[LEFT] = Animator(((8,0), (0, 0), (0, 2), (0, 0)))
+        self.animations[RIGHT] = Animator(((10,0), (2, 0), (2, 2), (2, 0)))
+        self.animations[UP] = Animator(((10,2), (6, 0), (6, 2), (6, 0)))
+        self.animations[DOWN] = Animator(((8,2), (4, 0), (4, 2), (4, 0)))
+        self.animations[DEATH] = Animator(((0, 12), (2, 12), (4, 12), (6, 12), (8, 12), (10, 12), (12, 12), (14, 12), (16, 12), (18, 12), (20, 12)), speed=6, loop=False)
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
@@ -80,24 +70,23 @@ class PacmanSprites(Spritesheet):
         for key in list(self.animations.keys()):
             self.animations[key].reset()
 
-
-class GhostSprites(Spritesheet):
-    """Contains references to all the Ghost sprites"""
-
-    def __init__(self, entity):
-        """Initialize class variables"""
-        Spritesheet.__init__(self)
-        self.x = {BLINKY: 0, PINKY: 2, INKY: 4, CLYDE: 6}
-        self.entity = entity
-        self.entity.image = self.getStartImage()
-
     def getStartImage(self):
-        """Starting image for the Ghosts"""
-        return self.getImage(self.x[self.entity.name], 4)
+        """Starting image for Pacman"""
+        return self.getImage(8, 0)
 
     def getImage(self, x, y):
         """Retrieves an images from the spritesheet"""
-        return Spritesheet.getImage(self, x, y, 2 * TILEWIDTH, 2 * TILEHEIGHT)
+        return Spritesheet.getImage(self, x, y, 2*TILEWIDTH, 2*TILEHEIGHT)
+
+
+class GhostSprites(Spritesheet):
+    """Contains references to all the Ghost sprites"""
+    def __init__(self, entity):
+        """Initialize class variables"""
+        Spritesheet.__init__(self)
+        self.x = {BLINKY:0, PINKY:2, INKY:4, CLYDE:6}
+        self.entity = entity
+        self.entity.image = self.getStartImage()
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
@@ -122,11 +111,18 @@ class GhostSprites(Spritesheet):
                 self.entity.image = self.getImage(8, 6)
             elif self.entity.direction == UP:
                 self.entity.image = self.getImage(8, 4)
+               
+    def getStartImage(self):
+        """Starting image for the Ghosts"""
+        return self.getImage(self.x[self.entity.name], 4)
+
+    def getImage(self, x, y):
+        """Retrieves an images from the spritesheet"""
+        return Spritesheet.getImage(self, x, y, 2*TILEWIDTH, 2*TILEHEIGHT)
 
 
 class FruitSprites(Spritesheet):
     """Contains references to all the Fruit sprites"""
-
     def __init__(self, entity, level):
         """Initialize class variables"""
         Spritesheet.__init__(self)
@@ -140,12 +136,11 @@ class FruitSprites(Spritesheet):
 
     def getImage(self, x, y):
         """Retrieves an images from the spritesheet"""
-        return Spritesheet.getImage(self, x, y, 2 * TILEWIDTH, 2 * TILEHEIGHT)
+        return Spritesheet.getImage(self, x, y, 2*TILEWIDTH, 2*TILEHEIGHT)
 
 
 class LifeSprites(Spritesheet):
     """Images used to represent lives left"""
-
     def __init__(self, numlives):
         """Initialize class variables"""
         Spritesheet.__init__(self)
@@ -160,16 +155,15 @@ class LifeSprites(Spritesheet):
         """Resets life sprites"""
         self.images = []
         for i in range(numlives):
-            self.images.append(self.getImage(0, 0))
+            self.images.append(self.getImage(0,0))
 
     def getImage(self, x, y):
         """Retrieves an images from the spritesheet"""
-        return Spritesheet.getImage(self, x, y, 2 * TILEWIDTH, 2 * TILEHEIGHT)
+        return Spritesheet.getImage(self, x, y, 2*TILEWIDTH, 2*TILEHEIGHT)
 
 
 class MazeSprites(Spritesheet):
     """Contains references to all the Maze sprites"""
-
     def __init__(self, mazefile, rotfile):
         """Initialize class variables"""
         Spritesheet.__init__(self)
@@ -193,12 +187,13 @@ class MazeSprites(Spritesheet):
                     sprite = self.getImage(x, y)
                     rotval = int(self.rotdata[row][col])
                     sprite = self.rotate(sprite, rotval)
-                    background.blit(sprite, (col * TILEWIDTH, row * TILEHEIGHT))
+                    background.blit(sprite, (col*TILEWIDTH, row*TILEHEIGHT))
                 elif self.data[row][col] == '=':
                     sprite = self.getImage(10, 8)
-                    background.blit(sprite, (col * TILEWIDTH, row * TILEHEIGHT))
+                    background.blit(sprite, (col*TILEWIDTH, row*TILEHEIGHT))
 
         return background
 
     def rotate(self, sprite, value):
-        return pygame.transform.rotate(sprite, value * 90)
+        """Rotates individual map images"""
+        return pygame.transform.rotate(sprite, value*90)

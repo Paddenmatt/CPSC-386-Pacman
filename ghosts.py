@@ -20,6 +20,12 @@ class Ghost(Entity):
         self.blinky = blinky
         self.homeNode = node
 
+    def reset(self):
+        """Resets the Ghosts"""
+        Entity.reset(self)
+        self.points = 200
+        self.directionMethod = self.goalDirection
+
     def update(self, dt):
         """Game loop called once per frame of the game"""
         self.sprites.update(dt)
@@ -38,19 +44,6 @@ class Ghost(Entity):
         """Chase goal is Pacman's position"""
         self.goal = self.pacman.position
 
-    def startFreight(self):
-        """Leaves the ghosts vulnerable to being eaten by Pacman"""
-        self.mode.setFreightMode()
-        if self.mode.current == FREIGHT:
-            self.setSpeed(50)
-            self.directionMethod = self.randomDirection
-
-    def normalMode(self):
-        """Resets things back to normal"""
-        self.setSpeed(100)
-        self.directionMethod = self.goalDirection
-        self.homeNode.denyAccess(DOWN, self)
-
     def spawn(self):
         """Sets goal to be the location of that node"""
         self.goal = self.spawnNode.position
@@ -67,11 +60,18 @@ class Ghost(Entity):
             self.directionMethod = self.goalDirection
             self.spawn()
 
-    def reset(self):
-        """Resets the Ghosts"""
-        Entity.reset(self)
-        self.points = 200
+    def startFreight(self):
+        """Leaves the ghosts vulnerable to being eaten by Pacman"""
+        self.mode.setFreightMode()
+        if self.mode.current == FREIGHT:
+            self.setSpeed(50)
+            self.directionMethod = self.randomDirection         
+
+    def normalMode(self):
+        """Resets things back to normal"""
+        self.setSpeed(100)
         self.directionMethod = self.goalDirection
+        self.homeNode.denyAccess(DOWN, self)
 
 
 class Blinky(Ghost):
@@ -133,8 +133,8 @@ class Clyde(Ghost):
 
     def chase(self):
         """Goal changes depending on how close he is to Pacman
-        If he's less than 8 tiles away from Pacman, he retreats to his scatter goal.
-        When he's far away from Pacman then he changes his mind and acts like Pinky"""
+         If he's less than 8 tiles away from Pacman, he retreats to his scatter goal.
+         When he's far away from Pacman then he changes his mind and acts like Pinky"""
         d = self.pacman.position - self.position
         ds = d.magnitudeSquared()
         if ds <= (TILEWIDTH * 8)**2:
@@ -183,11 +183,6 @@ class GhostGroup(object):
         for ghost in self:
             ghost.points = 200
 
-    def reset(self):
-        """Resets a ghost"""
-        for ghost in self:
-            ghost.reset()
-
     def hide(self):
         """Hide a ghost"""
         for ghost in self:
@@ -197,6 +192,11 @@ class GhostGroup(object):
         """Shows the ghost"""
         for ghost in self:
             ghost.visible = True
+
+    def reset(self):
+        """Resets a ghost"""
+        for ghost in self:
+            ghost.reset()
 
     def render(self, screen):
         """Draws a Ghost onto the screen"""

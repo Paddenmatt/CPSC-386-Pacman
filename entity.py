@@ -10,10 +10,10 @@ class Entity(object):
     def __init__(self, node):
         """Initialize class variables"""
         self.name = None
-        self.directions = {UP:Vector2(0, -1),DOWN:Vector2(0, 1),
+        self.directions = {UP:Vector2(0, -1),DOWN:Vector2(0, 1), 
                           LEFT:Vector2(-1, 0), RIGHT:Vector2(1, 0), STOP:Vector2()}
         self.direction = STOP
-        self.speed = 100
+        self.setSpeed(100)
         self.radius = 10
         self.collideRadius = 5
         self.color = WHITE
@@ -24,17 +24,14 @@ class Entity(object):
         self.setStartNode(node)
         self.image = None
 
-    def setStartNode(self, node):
-        """Defines a starting node"""
-        self.node = node
-        self.startNode = node
-        self.target = node
-        self.setPosition()
+    def setPosition(self):
+        """Sets the position of the Entity"""
+        self.position = self.node.position.copy()
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
-        self.position += self.directions[self.direction] * self.speed * dt
-
+        self.position += self.directions[self.direction]*self.speed*dt
+         
         if self.overshotTarget():
             self.node = self.target
             directions = self.validDirections()
@@ -49,11 +46,7 @@ class Entity(object):
                 self.target = self.getNewTarget(self.direction)
 
             self.setPosition()
-
-    def setPosition(self):
-        """Sets the position of the Entity"""
-        self.position = self.node.position.copy()
-
+          
     def validDirection(self, direction):
         """Checks if the pressed key is a valid direction"""
         if direction is not STOP:
@@ -64,7 +57,7 @@ class Entity(object):
 
     def getNewTarget(self, direction):
         """Checks if there is a Node in a direction,
-        If True move Pacman to that node automatically"""
+         If True move Pacman to that node automatically"""
         if self.validDirection(direction):
             return self.node.neighbors[direction]
         return self.node
@@ -85,28 +78,13 @@ class Entity(object):
         temp = self.node
         self.node = self.target
         self.target = temp
-
+        
     def oppositeDirection(self, direction):
         """Checks to see if the input direction is the opposite of the Entity's current direction"""
         if direction is not STOP:
             if direction == self.direction * -1:
                 return True
         return False
-
-    def setSpeed(self, speed):
-        """Sets the speed of the Entity"""
-        self.speed = speed * TILEWIDTH / 16
-
-    def render(self, screen):
-        """Draws the Entity onto the screen"""
-        if self.visible:
-            if self.image is not None:
-                adjust = Vector2(TILEWIDTH, TILEHEIGHT) / 2
-                p = self.position - adjust
-                screen.blit(self.image, p.asTuple())
-            else:
-                p = self.position.asInt()
-                pygame.draw.circle(screen, self.color, p, self.radius)
 
     def validDirections(self):
         """Gets a list of valid directions the Entity can move in"""
@@ -125,13 +103,19 @@ class Entity(object):
 
     def goalDirection(self, directions):
         """Gives the Entity a 'Goal' to head towards"""
-        # REPLACE AND IMPLEMENT A* ALGORITHM HERE
         distances = []
         for direction in directions:
             vec = self.node.position  + self.directions[direction]*TILEWIDTH - self.goal
             distances.append(vec.magnitudeSquared())
         index = distances.index(min(distances))
         return directions[index]
+
+    def setStartNode(self, node):
+        """Defines a starting node"""
+        self.node = node
+        self.startNode = node
+        self.target = node
+        self.setPosition()
 
     def setBetweenNodes(self, direction):
         """Set any entity between 2 nodes"""
@@ -145,3 +129,18 @@ class Entity(object):
         self.direction = STOP
         self.speed = 100
         self.visible = True
+
+    def setSpeed(self, speed):
+        """Sets the speed of the Entity"""
+        self.speed = speed * TILEWIDTH / 16
+
+    def render(self, screen):
+        """Draws the Entity onto the screen"""
+        if self.visible:
+            if self.image is not None:
+                adjust = Vector2(TILEWIDTH, TILEHEIGHT) / 2
+                p = self.position - adjust
+                screen.blit(self.image, p.asTuple())
+            else:
+                p = self.position.asInt()
+                pygame.draw.circle(screen, self.color, p, self.radius)
