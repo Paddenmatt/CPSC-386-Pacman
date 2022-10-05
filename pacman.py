@@ -3,6 +3,7 @@ from pygame.locals import *
 from vector import Vector2
 from constants import *
 from entity import Entity
+from sprites import PacmanSprites
 
 
 class Pacman(Entity):
@@ -23,6 +24,7 @@ class Pacman(Entity):
         self.target = node
         self.collideRadius = 5
         self.alive = True
+        self.sprites = PacmanSprites(self)
 
     def reset(self):
         """Resets Pacman"""
@@ -30,6 +32,9 @@ class Pacman(Entity):
         self.direction = LEFT
         self.setBetweenNodes(LEFT)
         self.alive = True
+        self.image = self.sprites.getStartImage()
+        self.sprites.reset()
+
 
     def die(self):
         """Kill Pacman"""
@@ -42,6 +47,7 @@ class Pacman(Entity):
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
+        self.sprites.update(dt)
         self.position += self.directions[self.direction]*self.speed*dt
         direction = self.getValidKey()
         if self.overshotTarget():

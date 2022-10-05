@@ -4,6 +4,7 @@ from vector import Vector2
 from constants import *
 from entity import Entity
 from modes import ModeController
+from sprites import GhostSprites
 
 
 class Ghost(Entity):
@@ -21,6 +22,7 @@ class Ghost(Entity):
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
+        self.sprites.update(dt)
         self.mode.update(dt)
         if self.mode.current is SCATTER:
             self.scatter()
@@ -78,6 +80,7 @@ class Blinky(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = BLINKY
         self.color = RED
+        self.sprites = GhostSprites(self)
 
 
 class Pinky(Ghost):
@@ -86,6 +89,7 @@ class Pinky(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = PINKY
         self.color = PINK
+        self.sprites = GhostSprites(self)
 
     def scatter(self):
         """Goal is in the upper left corner"""
@@ -102,6 +106,7 @@ class Inky(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = INKY
         self.color = TEAL
+        self.sprites = GhostSprites(self)
 
     def scatter(self):
         """Goal is in the lower right corner of the maze"""
@@ -120,6 +125,7 @@ class Clyde(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = CLYDE
         self.color = ORANGE
+        self.sprites = GhostSprites(self)
 
     def scatter(self):
         """Goal is in the bottom left corner of the maze"""
