@@ -1,3 +1,5 @@
+from cgi import test
+from tabnanny import check
 import pygame
 from pygame.locals import *
 from constants import *
@@ -11,6 +13,7 @@ from text import TextGroup
 from sprites import LifeSprites
 from sprites import MazeSprites
 from mazedata import MazeData
+from sound import Sound
 
 
 class GameController(object):
@@ -36,34 +39,76 @@ class GameController(object):
         self.fruitNode = None
         self.mazedata = MazeData()
 
+        # Added by Daniel C
+        self.sound = Sound()
+
+        # To control menu
+        # self.running, self.playing = True, False
+        self.font = RETRO_FONT
+        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
+        self.DISPLAY_W, self.DISPLAY_H = SCREENWIDTH, SCREENWIDTH
+        self.mid_w, self.mid_h = self.DISPLAY_W/2, self.DISPLAY_H/2
+        self.startx, self.starty = self.mid_w, self.mid_h + 30
+        self.highscorex, self.highscorey = self.mid_w, self.mid_h + 50
+        self.exitx, self.exity = self.mid_w, self.mid_h + 70
+        self.cursor_rect = pygame.Rect(0, 0, 20, 20)
+        self.offset = -100
+        self.cursor_rect.midtop = (self.startx + self.offset, self.starty)
+        self.state = 'Start'
+        self.menu = True
+
+    def draw_image(self, image, x, y):
+        image_rect = image.get_rect()
+        image_rect.center = (x, y)
+        self.screen.blit(image, image_rect)
+
+    def draw_text(self, text, size, x, y):
+        font = pygame.font.Font(RETRO_FONT, size)
+        text_surface = font.render(text, True, WHITE)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x, y)
+        self.screen.blit(text_surface, text_rect)
+
+    def reset_keys(self):
+        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
+
     def setBackground(self):
         """Sets background color to black"""
         self.background_norm = pygame.surface.Surface(SCREENSIZE).convert()
         self.background_norm.fill(BLACK)
         self.background_flash = pygame.surface.Surface(SCREENSIZE).convert()
         self.background_flash.fill(BLACK)
-        self.background_norm = self.mazesprites.constructBackground(self.background_norm, self.level%5)
-        self.background_flash = self.mazesprites.constructBackground(self.background_flash, 5)
+        self.background_norm = self.mazesprites.constructBackground(
+            self.background_norm, self.level % 5)
+        self.background_flash = self.mazesprites.constructBackground(
+            self.background_flash, 5)
         self.flashBG = False
         self.background = self.background_norm
 
     def startGame(self):
         """Starts Pacman game"""
         self.mazedata.loadMaze(self.level)
-        self.mazesprites = MazeSprites(self.mazedata.obj.name+".txt", self.mazedata.obj.name+"_rotation.txt")
+        self.mazesprites = MazeSprites(
+            self.mazedata.obj.name+".txt", self.mazedata.obj.name+"_rotation.txt")
         self.setBackground()
         self.nodes = NodeGroup(self.mazedata.obj.name+".txt")
         self.mazedata.obj.setPortalPairs(self.nodes)
         self.mazedata.obj.connectHomeNodes(self.nodes)
-        self.pacman = Pacman(self.nodes.getNodeFromTiles(*self.mazedata.obj.pacmanStart))
+        self.pacman = Pacman(self.nodes.getNodeFromTiles(
+            *self.mazedata.obj.pacmanStart))
         self.pellets = PelletGroup(self.mazedata.obj.name+".txt")
         self.ghosts = GhostGroup(self.nodes.getStartTempNode(), self.pacman)
 
-        self.ghosts.pinky.setStartNode(self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(2, 3)))
-        self.ghosts.inky.setStartNode(self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(0, 3)))
-        self.ghosts.clyde.setStartNode(self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(4, 3)))
-        self.ghosts.setSpawnNode(self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(2, 3)))
-        self.ghosts.blinky.setStartNode(self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(2, 0)))
+        self.ghosts.pinky.setStartNode(
+            self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(2, 3)))
+        self.ghosts.inky.setStartNode(
+            self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(0, 3)))
+        self.ghosts.clyde.setStartNode(
+            self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(4, 3)))
+        self.ghosts.setSpawnNode(self.nodes.getNodeFromTiles(
+            *self.mazedata.obj.addOffset(2, 3)))
+        self.ghosts.blinky.setStartNode(
+            self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(2, 0)))
 
         self.nodes.denyHomeAccess(self.pacman)
         self.nodes.denyHomeAccessList(self.ghosts)
@@ -77,7 +122,7 @@ class GameController(object):
         self.textgroup.update(dt)
         self.pellets.update(dt)
         if not self.pause.paused:
-            self.ghosts.update(dt)      
+            self.ghosts.update(dt)
             if self.fruit is not None:
                 self.fruit.update(dt)
             self.checkPelletEvents()
@@ -118,7 +163,9 @@ class GameController(object):
                         if not self.pause.paused:
                             self.textgroup.hideText()
                             self.showEntities()
+                            self.sound.play_ghost_sound()
                         else:
+                            self.sound.pause_ghost_sound()
                             self.textgroup.showText(PAUSETXT)
                             # self.hideEntities()
 
@@ -127,11 +174,16 @@ class GameController(object):
         pellet = self.pacman.eatPellets(self.pellets.pelletList)
         if pellet:
             self.pellets.numEaten += 1
+
+            # Check if channel is busy with other eat pellet sound
+            self.sound.play_munch_pellet()
+
             self.updateScore(pellet.points)
             if self.pellets.numEaten == 30:    # Allow Inky to leave home once 30 pellets are eaten
                 self.ghosts.inky.startNode.allowAccess(RIGHT, self.ghosts.inky)
             if self.pellets.numEaten == 70:     # Allow Clyde to leave home once 70 pellets are eaten
-                self.ghosts.clyde.startNode.allowAccess(LEFT, self.ghosts.clyde)
+                self.ghosts.clyde.startNode.allowAccess(
+                    LEFT, self.ghosts.clyde)
             self.pellets.pelletList.remove(pellet)
             # Sends Ghost's into FREIGHT mode when a power pellet is consumed
             if pellet.name == POWERPELLET:
@@ -151,34 +203,46 @@ class GameController(object):
                 if ghost.mode.current is FREIGHT:
                     self.pacman.visible = False
                     ghost.visible = False
-                    self.updateScore(ghost.points)                  
-                    self.textgroup.addText(str(ghost.points), WHITE, ghost.position.x, ghost.position.y, 8, time=1)
+                    self.sound.play_munch_ghost()
+                    self.updateScore(ghost.points)
+                    self.textgroup.addText(
+                        str(ghost.points), WHITE, ghost.position.x, ghost.position.y, 8, time=1)
                     self.ghosts.updatePoints()
                     self.pause.setPause(pauseTime=1, func=self.showEntities)
                     ghost.startSpawn()
                     self.nodes.allowHomeAccess(ghost)
                 elif ghost.mode.current is not SPAWN:
                     if self.pacman.alive:
-                        self.lives -=  1
+                        self.lives -= 1
                         self.lifesprites.removeImage()
-                        self.pacman.die()               
+                        # PacMan has died, play his death sound
+                        self.sound.play_death()
+                        self.pacman.die()
+                        self.sound.pause_ghost_sound()
                         self.ghosts.hide()
                         if self.lives <= 0:
                             self.textgroup.showText(GAMEOVERTXT)
-                            self.pause.setPause(pauseTime=3, func=self.restartGame)
+                            self.pause.setPause(
+                                pauseTime=3, func=self.restartGame)
+                            self.menu = True
                         else:
-                            self.pause.setPause(pauseTime=3, func=self.resetLevel)
-    
+                            self.pause.setPause(
+                                pauseTime=3, func=self.resetLevel)
+
     def checkFruitEvents(self):
         """Fruit related events"""
         if self.pellets.numEaten == 50 or self.pellets.numEaten == 140:
             if self.fruit is None:
-                self.fruit = Fruit(self.nodes.getNodeFromTiles(9, 20), self.level)
+                self.fruit = Fruit(
+                    self.nodes.getNodeFromTiles(9, 20), self.level)
                 print(self.fruit)
         if self.fruit is not None:
             if self.pacman.collideCheck(self.fruit):
+                # Play munch fruit sound!
+                self.sound.play_munch_fruit()
                 self.updateScore(self.fruit.points)
-                self.textgroup.addText(str(self.fruit.points), WHITE, self.fruit.position.x, self.fruit.position.y, 8, time=1)
+                self.textgroup.addText(str(
+                    self.fruit.points), WHITE, self.fruit.position.x, self.fruit.position.y, 8, time=1)
                 fruitCaptured = False
                 for fruit in self.fruitCaptured:
                     if fruit.get_offset() == self.fruit.image.get_offset():
@@ -260,9 +324,100 @@ class GameController(object):
 
         pygame.display.update()
 
+    def check_menu_events(self):
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                key = event.key
+                if key == pygame.K_RETURN:
+                    self.START_KEY = True
+                if key == pygame.K_BACKSPACE:
+                    self.BACK_KEY = True
+                if key == pygame.K_DOWN:
+                    self.DOWN_KEY = True
+                if key == pygame.K_UP:
+                    self.UP_KEY = True
 
-if __name__ == "__main__":
-    game = GameController()
-    game.startGame()
-    while True:
-        game.update()
+    def move_cursor(self):
+        if self.DOWN_KEY:
+            if self.state == 'Start':
+                self.cursor_rect.midtop = (
+                    self.highscorex + self.offset, self.highscorey)
+                self.state = 'Highscores'
+            elif self.state == 'Highscores':
+                self.cursor_rect.midtop = (
+                    self.exitx + self.offset, self.exity)
+                self.state = 'Exit'
+            elif self.state == 'Exit':
+                self.cursor_rect.midtop = (
+                    self.startx + self.offset, self.starty)
+                self.state = 'Start'
+        if self.UP_KEY:
+            if self.state == 'Start':
+                self.cursor_rect.midtop = (
+                    self.exitx + self.offset, self.exity)
+                self.state = 'Exit'
+            elif self.state == 'Highscores':
+                self.cursor_rect.midtop = (
+                    self.startx + self.offset, self.starty)
+                self.state = 'Start'
+            elif self.state == 'Exit':
+                self.cursor_rect.midtop = (
+                    self.highscorex + self.offset, self.highscorey)
+                self.state = 'Highscores'
+
+    def check_menu_input(self):
+        self.move_cursor()
+        if self.START_KEY:
+            if self.state == 'Start':
+                self.menu = False
+                self.sound.play_startup()
+            elif self.state == 'Highscores':
+                exit()
+            elif self.state == 'Exit':
+                exit()
+            self.menu = False
+
+    def draw_cursor(self):
+        self.draw_text("*", 20, self.cursor_rect.x, self.cursor_rect.y)
+
+    def main_menu(self):
+        self.menu = True
+        while self.menu:
+            self.check_menu_events()
+            self.check_menu_input()
+
+            self.screen.fill(BLUE)
+            self.draw_text('PacMan but he has a gun',
+                           20, self.mid_w, self.mid_h-120)
+            pacman_image = pygame.transform.scale(
+                pygame.image.load('pacman_img.png'), (150, 150))
+            self.draw_image(pacman_image, self.mid_w, self.mid_h-50)
+            self.draw_text('Start Game', 20, self.startx, self.starty)
+            self.draw_text('High Scores', 20,
+                           self.highscorex, self.highscorey)
+            self.draw_text('Exit', 20, self.exitx, self.exity)
+
+            self.draw_cursor()
+            pygame.display.update()
+            self.reset_keys()
+
+    # def check_menu_events(self):
+    #     for event in pygame.event.get():
+    #         for event in pygame.event.get():
+    #             if event.type == QUIT:
+    #                 exit()
+    #             if event.type == pygame.KEYDOWN:
+    #                 key = event.key
+    #                 if key == pygame.K_RETURN:
+    #                     self.START_KEY = True
+    #                 if key == pygame.K_BACKSPACE:
+    #                     self.BACK_KEY = True
+    #                 if key == pygame.K_DOWN:
+    #                     self.DOWN_KEY = True
+    #                 if key == pygame.K_UP:
+    #                     self.UP_KEY = True
+
+    # def reset_keys(self):
+    #     self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
