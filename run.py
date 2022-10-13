@@ -394,9 +394,6 @@ class GameController(object):
             pacman_image = pygame.transform.scale(
                 pygame.image.load('Pacman image.JPG'), (350, 150))
             self.draw_image(pacman_image, self.mid_w, 100)
-            pacman_chasing = pygame.transform.scale(
-                pygame.image.load('chasing_pacman.JPG'), (150, 60))
-            self.draw_image(pacman_chasing, 300, 300)
 
             self.draw_text('Play Game', 15, self.startx, 450)
             self.draw_text('High Scores', 15,
@@ -404,9 +401,14 @@ class GameController(object):
             self.draw_text('Exit', 15, self.exitx, 510)
 
             self.draw_cursor()
-            pygame.display.update()
+            for n in range(2):
+                print(f"Image{n}")
+                pacman_chasing = pygame.transform.scale(pygame.image.load(f'chasing{n}.JPG'), (150, 60))
+                self.draw_image(pacman_chasing, 300, 300)
+                time.sleep(0.25)
+                pygame.display.update()
             self.reset_keys()
-
+            
     # def check_menu_events(self):
     #     for event in pygame.event.get():
     #         for event in pygame.event.get():
