@@ -48,9 +48,9 @@ class GameController(object):
         self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
         self.DISPLAY_W, self.DISPLAY_H = SCREENWIDTH, SCREENWIDTH
         self.mid_w, self.mid_h = self.DISPLAY_W/2, self.DISPLAY_H/2
-        self.startx, self.starty = self.mid_w, self.mid_h + 30
-        self.highscorex, self.highscorey = self.mid_w, self.mid_h + 50
-        self.exitx, self.exity = self.mid_w, self.mid_h + 70
+        self.startx, self.starty = self.mid_w, self.mid_h + 227
+        self.highscorex, self.highscorey = self.mid_w, self.mid_h + 50 + 205
+        self.exitx, self.exity = self.mid_w, self.mid_h + 70 + 215
         self.cursor_rect = pygame.Rect(0, 0, 20, 20)
         self.offset = -100
         self.cursor_rect.midtop = (self.startx + self.offset, self.starty)
