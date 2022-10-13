@@ -14,6 +14,7 @@ from sprites import LifeSprites
 from sprites import MazeSprites
 from mazedata import MazeData
 from sound import Sound
+import time
 
 
 class GameController(object):
