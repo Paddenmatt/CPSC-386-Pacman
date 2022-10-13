@@ -394,7 +394,11 @@ class GameController(object):
             pacman_image = pygame.transform.scale(
                 pygame.image.load('Pacman image.JPG'), (350, 150))
             self.draw_image(pacman_image, self.mid_w, 100)
-            self.draw_text('Start Game', 15, self.startx, 450)
+            pacman_chasing = pygame.transform.scale(
+                pygame.image.load('chasing_pacman.JPG'), (150, 60))
+            self.draw_image(pacman_chasing, 300, 300)
+
+            self.draw_text('Play Game', 15, self.startx, 450)
             self.draw_text('High Scores', 15,
                            self.highscorex, 480)
             self.draw_text('Exit', 15, self.exitx, 510)
