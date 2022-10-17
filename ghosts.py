@@ -65,10 +65,11 @@ class Ghost(Entity):
         self.mode.setFreightMode()
         if self.mode.current == FREIGHT:
             self.setSpeed(50)
-            self.directionMethod = self.randomDirection         
+            self.directionMethod = self.randomDirection
 
     def normalMode(self):
         """Resets things back to normal"""
+
         self.setSpeed(100)
         self.directionMethod = self.goalDirection
         self.homeNode.denyAccess(DOWN, self)
@@ -97,7 +98,8 @@ class Pinky(Ghost):
 
     def chase(self):
         """Target 4 tiles ahead of Pacman"""
-        self.goal = self.pacman.position + self.pacman.directions[self.pacman.direction] * TILEWIDTH * 4
+        self.goal = self.pacman.position + \
+            self.pacman.directions[self.pacman.direction] * TILEWIDTH * 4
 
 
 class Inky(Ghost):
@@ -114,7 +116,8 @@ class Inky(Ghost):
 
     def chase(self):
         """Uses Pacmans and Blinkys position to find goal"""
-        vec1 = self.pacman.position + self.pacman.directions[self.pacman.direction] * TILEWIDTH * 2
+        vec1 = self.pacman.position + \
+            self.pacman.directions[self.pacman.direction] * TILEWIDTH * 2
         vec2 = (vec1 - self.blinky.position) * 2
         self.goal = self.blinky.position + vec2
 
@@ -140,18 +143,21 @@ class Clyde(Ghost):
         if ds <= (TILEWIDTH * 8)**2:
             self.scatter()
         else:
-            self.goal = self.pacman.position + self.pacman.directions[self.pacman.direction] * TILEWIDTH * 4
+            self.goal = self.pacman.position + \
+                self.pacman.directions[self.pacman.direction] * TILEWIDTH * 4
 
 
 class GhostGroup(object):
     """Deals with the ghosts as a group rather than individually"""
-    def __init__(self, node, pacman):
+
+    def __init__(self, node, pacman, sound):
         """Initialize class variables"""
         self.blinky = Blinky(node, pacman)
         self.pinky = Pinky(node, pacman)
         self.inky = Inky(node, pacman, self.blinky)
         self.clyde = Clyde(node, pacman)
         self.ghosts = [self.blinky, self.pinky, self.inky, self.clyde]
+        self.sound = sound
 
     def __iter__(self):
         """Loop through the ghost list"""
@@ -164,9 +170,17 @@ class GhostGroup(object):
 
     def startFreight(self):
         """Leaves the ghosts vulnerable to being eaten by Pacman"""
+        self.freightSound()
         for ghost in self:
             ghost.startFreight()
         self.resetPoints()
+
+    def stopSound(self):
+        self.sound.pause_ghost_sound()
+
+    def freightSound(self):
+        """Plays the freight sound effect"""
+        self.sound.play_freight_sound()
 
     def setSpawnNode(self, node):
         """Defines the spawn node"""

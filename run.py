@@ -14,6 +14,8 @@ from sprites import LifeSprites
 from sprites import MazeSprites
 from mazedata import MazeData
 from sound import Sound
+from timer import Timer
+import os  # needed for highscore functionality
 import time
 
 
@@ -58,6 +60,23 @@ class GameController(object):
         self.state = 'Start'
         self.menu = True
 
+        menu_image_list = [pygame.transform.scale(pygame.image.load(f'chasing{n}.jpg'), (300, 80)) for n in range(2)]
+        self.menu_timer = Timer(frames=menu_image_list, wait=250)
+        self.image_position_menu_y = self.mid_h + 80
+
+        # Fetch highscore
+        self.highscore = None
+        self.getHighScore()
+
+    def getHighScore(self):
+        # Check if hiscore.txt already exists
+        if os.path.exists('hiscore.txt'):
+            with open('hiscore.txt', 'r') as f:
+                highscore = int(f.readline())
+                self.highscore = highscore
+        else:
+            self.highscore = 0  # Default if high score does not exist
+
     def draw_image(self, image, x, y):
         image_rect = image.get_rect()
         image_rect.center = (x, y)
@@ -98,7 +117,7 @@ class GameController(object):
         self.pacman = Pacman(self.nodes.getNodeFromTiles(
             *self.mazedata.obj.pacmanStart))
         self.pellets = PelletGroup(self.mazedata.obj.name+".txt")
-        self.ghosts = GhostGroup(self.nodes.getStartTempNode(), self.pacman)
+        self.ghosts = GhostGroup(self.nodes.getStartTempNode(), self.pacman, self.sound)
 
         self.ghosts.pinky.setStartNode(
             self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(2, 3)))
@@ -298,7 +317,19 @@ class GameController(object):
     def updateScore(self, points):
         """Updates game score"""
         self.score += points
+
+        # Log high score
+        if self.score > self.highscore:
+            self.updateHighscore()
+
         self.textgroup.updateScore(self.score)
+
+    def updateHighscore(self):
+        """Updates highscore"""
+        self.highscore = self.score
+        with open('hiscore.txt', 'w') as f:
+            # Write new high score, if better than last
+            f.write(str(self.highscore))
 
     def render(self):
         """Draws the images onto the screen"""
@@ -402,14 +433,12 @@ class GameController(object):
             self.draw_text('Exit', 15, self.exitx, 510)
 
             self.draw_cursor()
-            for n in range(2):
-                print(f"Image{n}")
-                pacman_chasing = pygame.transform.scale(pygame.image.load(f'chasing{n}.JPG'), (150, 60))
-                self.draw_image(pacman_chasing, 300, 300)
-                time.sleep(0.25)
-                pygame.display.update()
+
+            self.draw_image(self.menu_timer.imagerect(), self.mid_w, self.image_position_menu_y)
+            pygame.display.update()
+
             self.reset_keys()
-            
+
     # def check_menu_events(self):
     #     for event in pygame.event.get():
     #         for event in pygame.event.get():

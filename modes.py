@@ -1,4 +1,5 @@
 from constants import *
+from sound import Sound
 
 
 class MainMode(object):
@@ -36,7 +37,8 @@ class ModeController(object):
         self.time = None
         self.mainmode = MainMode()
         self.current = self.mainmode.mode
-        self.entity = entity 
+        self.entity = entity
+        self.sound = Sound()
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
@@ -46,7 +48,13 @@ class ModeController(object):
             if self.timer >= self.time:
                 self.time = None
                 self.entity.normalMode()
+
+                # Resume playing of normal ghost sound
+                self.sound.pause_ghost_sound()
+                self.sound.play_ghost_sound()
+
                 self.current = self.mainmode.mode
+
         elif self.current in [SCATTER, CHASE]:
             self.current = self.mainmode.mode
 
