@@ -7,6 +7,8 @@ def play():
     while True:
         if game.menu:
             game.main_menu()
+        elif game.highscoremenu:
+            game.highscore_menu()
         else:
             game.update()
 

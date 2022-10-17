@@ -58,6 +58,7 @@ class GameController(object):
         self.offset = -100
         self.cursor_rect.midtop = (self.startx + self.offset, self.starty)
         self.state = 'Start'
+        self.highscoremenu = False
         self.menu = True
 
         menu_image_list = [pygame.transform.scale(pygame.image.load(f'chasing{n}.jpg'), (300, 80)) for n in range(2)]
@@ -76,6 +77,8 @@ class GameController(object):
                 self.highscore = highscore
         else:
             self.highscore = 0  # Default if high score does not exist
+
+        return self.highscore
 
     def draw_image(self, image, x, y):
         image_rect = image.get_rect()
@@ -406,10 +409,13 @@ class GameController(object):
                 self.menu = False
                 self.sound.play_startup()
             elif self.state == 'Highscores':
-                exit()
+                self.highscoremenu = True
             elif self.state == 'Exit':
                 exit()
             self.menu = False
+        if self.BACK_KEY: # if we are in highscore menu
+            self.highscoremenu = False
+            self.menu = True
 
     def draw_cursor(self):
         self.draw_text("*", 20, self.cursor_rect.x, self.cursor_rect.y)
@@ -421,8 +427,6 @@ class GameController(object):
             self.check_menu_input()
 
             self.screen.fill(BLACK)
-            #self.draw_text('PacMan but he has a gun',
-                           #20, self.mid_w, self.mid_h-120)
             pacman_image = pygame.transform.scale(
                 pygame.image.load('Pacman image.JPG'), (350, 150))
             self.draw_image(pacman_image, self.mid_w, 100)
@@ -435,6 +439,25 @@ class GameController(object):
             self.draw_cursor()
 
             self.draw_image(self.menu_timer.imagerect(), self.mid_w, self.image_position_menu_y)
+            pygame.display.update()
+
+            self.reset_keys()
+
+    def get_highscore_string(self):
+        curr_high_score = f'Current high score is {self.getHighScore()}'
+        return curr_high_score
+
+    def highscore_menu(self):
+        self.highscoremenu = True
+        while self.highscoremenu:
+            self.check_menu_events()
+            self.check_menu_input()
+
+            self.screen.fill(BLACK)
+
+            curr_high_score = self.get_highscore_string()
+            self.draw_text(curr_high_score, 15, self.mid_w, self.mid_h)
+            self.draw_text('Press backspace to exit', 15, self.mid_w, self.mid_h + 20)
             pygame.display.update()
 
             self.reset_keys()
