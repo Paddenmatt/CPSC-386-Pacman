@@ -17,7 +17,7 @@ Option 2. Hit the green Play button inside of Pycharm or Visual Studio Code whil
 2. The game is paused until the player is ready. The player must press "Spacebar" to unpause and begin playing Pacman.
 
 # Prerequisites: Must have pygame and numpy installed
-Install pygame and numpy: <br />
+**Install pygame and numpy:** <br />
 python3 -m pip install -U pygame --user <br />
 python3 -m pip install numpy <br />
 
@@ -33,12 +33,6 @@ ARROW UP - UP <br />
 ARROW DOWN - DOWN <br />
 ENTER - SELECT <br />
 BACKSPACE - GO BACK <br />
-
-# Contributors
-1. Matthew Padden
-2. Kevin Ortiz
-3. Daniel Cazarez
-4. Aditya Shah
 
 # Contributors
 1. Matthew Padden
