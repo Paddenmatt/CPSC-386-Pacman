@@ -11,7 +11,6 @@ The portals then close; the ghosts can't transport.
 2. The game is paused until the player is ready. The player must press "Spacebar" to unpause and begin playing Pacman.
 
 # Prerequisites: Must have pygame and numpy installed
-<<<<<<< test
 **Install pygame and numpy:** <br />
 python3 -m pip install -U pygame --user <br />
 python3 -m pip install numpy <br />
@@ -28,7 +27,8 @@ ARROW UP - UP <br />
 ARROW DOWN - DOWN <br />
 ENTER - SELECT <br />
 BACKSPACE - GO BACK <br />
-=======
+
+# Prerequisites: Must have pygame and numpy installed
 Install pygame and numpy:
 python3 -m pip install -U pygame --user
 python3 -m pip install numpy
@@ -45,7 +45,6 @@ ARROW UP - UP
 ARROW DOWN - DOWN
 ENTER - SELECT
 BACKSPACE - GO BACK
->>>>>>> main
 
 # Contributors
 1. Matthew Padden
