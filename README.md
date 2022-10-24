@@ -3,16 +3,25 @@ Pacman Portal game, based on the classic Pacman game, and the classic Portal (3d
 
 # In-Game Controls
 W - UP
+
 A - Left
+
 S - DOWN
+
 D - RIGHT
+
 SPACEBAR - PAUSE/UNPAUSE
+
 
 # Menu Controls
 ARROW UP - UP
+
 ARROW DOWN - DOWN
+
 ENTER - SELECT
+
 BACKSPACE - GO BACK
+
 
 # Contributors
 1. Matthew Padden
