@@ -9,11 +9,12 @@ class Node(object):
         """Initialize class variables"""
         self.position = Vector2(x, y)
         # The values of the keys are the entities that have access to travel in that direction
-        self.neighbors = {UP:None, DOWN:None, LEFT:None, RIGHT:None, PORTAL:None}
-        self.access = {UP:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT], 
-                       DOWN:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT], 
-                       LEFT:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT], 
-                       RIGHT:[PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT]}
+        self.neighbors = {UP: None, DOWN: None,
+                          LEFT: None, RIGHT: None, PORTAL: None}
+        self.access = {UP: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
+                       DOWN: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
+                       LEFT: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT],
+                       RIGHT: [PACMAN, BLINKY, PINKY, INKY, CLYDE, FRUIT]}
 
     def denyAccess(self, direction, entity):
         """Restrict entity from moving in any direction"""
@@ -37,6 +38,7 @@ class Node(object):
 
 class NodeGroup(object):
     """Creates all the individual nodes"""
+
     def __init__(self, level):
         """Initialize class variables"""
         self.level = level
@@ -115,11 +117,11 @@ class NodeGroup(object):
 
     def createHomeNodes(self, xoffset, yoffset):
         """Creates the Ghost's home"""
-        homedata = np.array([['X','X','+','X','X'],
-                             ['X','X','.','X','X'],
-                             ['+','X','.','X','+'],
-                             ['+','.','+','.','+'],
-                             ['+','X','X','X','+']])
+        homedata = np.array([['X', 'X', '+', 'X', 'X'],
+                             ['X', 'X', '.', 'X', 'X'],
+                             ['+', 'X', '.', 'X', '+'],
+                             ['+', '.', '+', '.', '+'],
+                             ['+', 'X', 'X', 'X', '+']])
 
         self.createNodeTable(homedata, xoffset, yoffset)
         self.connectHorizontally(homedata, xoffset, yoffset)

@@ -9,8 +9,8 @@ from sprites import PacmanSprites
 class Pacman(Entity):
     def __init__(self, node):
         """Initialize class variables"""
-        Entity.__init__(self, node )
-        self.name = PACMAN    
+        Entity.__init__(self, node)
+        self.name = PACMAN
         self.color = YELLOW
         self.direction = LEFT
         self.setBetweenNodes(LEFT)
@@ -49,7 +49,7 @@ class Pacman(Entity):
             if self.target is self.node:
                 self.direction = STOP
             self.setPosition()
-        else: 
+        else:
             if self.oppositeDirection(direction):
                 self.reverseDirection()
 
@@ -64,7 +64,7 @@ class Pacman(Entity):
             return LEFT
         if key_pressed[K_RIGHT]:
             return RIGHT
-        return STOP  
+        return STOP
 
     def eatPellets(self, pelletList):
         """If Pacman collides with a pellet, then we just return that pellet.
@@ -72,8 +72,8 @@ class Pacman(Entity):
         for pellet in pelletList:
             if self.collideCheck(pellet):
                 return pellet
-        return None    
-    
+        return None
+
     def collideGhost(self, ghost):
         """Check if Pacman is colliding with the Ghost"""
         return self.collideCheck(ghost)
