@@ -4,10 +4,20 @@ Pacman Portal game, based on the classic Pacman game, and the classic Portal (3d
 10/23/2022: All requirements except portal gun completed.
 
 # Instructions to play:
-Press spacebar to toggle pause/unpause
-Use arrow keys to move around the maze
-Use the enter key to select a tile in the main menu
-Use the backspace key to return to the main menu from the high scores menu
+**Prerequisites: Must have pygame and numpy installed<br />**
+
+
+**Install pygame and numpy:<br />
+python3 -m pip install -U pygame --user<br />
+python3 -m pip install numpy<br />**
+
+
+**Play game: python3 game.py<br />**
+
+Press spacebar to toggle pause/unpause<br />
+Use arrow keys to move around the maze<br />
+Use the enter key to select a tile in the main menu<br />
+Use the backspace key to return to the main menu from the high scores menu<br />
 
 Have fun!
 
