@@ -95,21 +95,43 @@ class GhostSprites(Spritesheet):
         self.x = {BLINKY: 0, PINKY: 2, INKY: 4, CLYDE: 6}
         self.entity = entity
         self.entity.image = self.getStartImage()
+        self.animations = {}
+        self.stopimage = (8, 0)
+        self.defineAnimations()
+
+    def defineAnimations(self):
+        """Sets Pacman's animations for each direction"""
+        self.animations[4] = Animator(((10, 4), (30, 4), (10, 6), (30, 6)), speed=8)  # FREIGHT FLASHING
+        self.animations[5] = Animator(((10, 4), (30, 4)), speed=8)  # FREIGHT FLASHING
+
+        x = self.x[self.entity.name]
+        self.animations[LEFT] = Animator(((x, 8), (x+22, 8)), speed=9)
+        self.animations[RIGHT] = Animator(((x, 10), (x+22, 10)), speed=9)
+        self.animations[UP] = Animator(((x, 4), (x+22, 4)), speed=9)
+        self.animations[DOWN] = Animator(((x, 6), (x+22, 6)), speed=9)
 
     def update(self, dt):
         """Game loop called once per frame of the game"""
-        x = self.x[self.entity.name]
+
         if self.entity.mode.current in [SCATTER, CHASE]:
             if self.entity.direction == LEFT:
-                self.entity.image = self.getImage(x, 8)
+                self.entity.image = self.getImage(*self.animations[LEFT].update(dt))
+
             elif self.entity.direction == RIGHT:
-                self.entity.image = self.getImage(x, 10)
+                self.entity.image = self.getImage(*self.animations[RIGHT].update(dt))
+
             elif self.entity.direction == DOWN:
-                self.entity.image = self.getImage(x, 6)
+                self.entity.image = self.getImage(*self.animations[DOWN].update(dt))
+
             elif self.entity.direction == UP:
-                self.entity.image = self.getImage(x, 4)
-        elif self.entity.mode.current == FREIGHT:
-            self.entity.image = self.getImage(10, 4)
+                self.entity.image = self.getImage(*self.animations[UP].update(dt))
+
+        elif self.entity.mode.current == FREIGHT and self.entity.mode.timer <= 5:
+            self.entity.image = self.getImage(*self.animations[5].update(dt))
+
+        elif self.entity.mode.current == FREIGHT and self.entity.mode.timer > 5:
+            self.entity.image = self.getImage(*self.animations[4].update(dt))
+
         elif self.entity.mode.current == SPAWN:
             if self.entity.direction == LEFT:
                 self.entity.image = self.getImage(8, 8)
