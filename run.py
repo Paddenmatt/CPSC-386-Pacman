@@ -1,4 +1,5 @@
 from cgi import test
+from pdb import post_mortem
 from tabnanny import check
 import pygame
 from pygame.locals import *
@@ -10,11 +11,12 @@ from ghosts import GhostGroup
 from fruit import Fruit
 from pauser import Pause
 from text import TextGroup
-from sprites import LifeSprites
+from sprites import DEATH, LifeSprites
 from sprites import MazeSprites
 from mazedata import MazeData
 from sound import Sound
 from timer import Timer
+from portal import Portal
 import os  # needed for highscore functionality
 import time
 
@@ -24,6 +26,7 @@ class GameController(object):
         """Initialize class variables"""
         pygame.init()
         self.screen = pygame.display.set_mode(SCREENSIZE, 0, 32)
+        pygame.display.set_caption("Pacman Project -- CSPC 386")
         self.background = None
         self.background_norm = None
         self.background_flash = None
@@ -61,7 +64,8 @@ class GameController(object):
         self.highscoremenu = False
         self.menu = True
 
-        menu_image_list = [pygame.transform.scale(pygame.image.load(f'chasing{n}.jpg'), (300, 80)) for n in range(2)]
+        menu_image_list = [pygame.transform.scale(pygame.image.load(
+            f'images/chasing{n}.jpg'), (300, 80)) for n in range(2)]
         self.menu_timer = Timer(frames=menu_image_list, wait=250)
         self.image_position_menu_y = self.mid_h + 80
 
@@ -119,8 +123,15 @@ class GameController(object):
         self.mazedata.obj.connectHomeNodes(self.nodes)
         self.pacman = Pacman(self.nodes.getNodeFromTiles(
             *self.mazedata.obj.pacmanStart))
+
+        # Create portals and portal list (could be a group)
+        self.portal1 = None
+        self.portal2 = None
+        self.portals = []
+
         self.pellets = PelletGroup(self.mazedata.obj.name+".txt")
-        self.ghosts = GhostGroup(self.nodes.getStartTempNode(), self.pacman, self.sound)
+        self.ghosts = GhostGroup(
+            self.nodes.getStartTempNode(), self.pacman, self.sound)
 
         self.ghosts.pinky.setStartNode(
             self.nodes.getNodeFromTiles(*self.mazedata.obj.addOffset(2, 3)))
@@ -151,6 +162,11 @@ class GameController(object):
             self.checkPelletEvents()
             self.checkGhostEvents()
             self.checkFruitEvents()
+
+        # ADDED PORTAL CODE ### to update a portal
+        if self.portals:
+            for portal in self.portals:
+                portal.update(dt)
 
         if self.pacman.alive:
             if not self.pause.paused:
@@ -191,6 +207,22 @@ class GameController(object):
                             self.sound.pause_ghost_sound()
                             self.textgroup.showText(PAUSETXT)
                             # self.hideEntities()
+                elif event.key == K_z:
+                    if self.pacman.direction != 0:
+                        node = self.pacman.node.neighbors[self.pacman.direction]
+                    if node:  # does not equal none
+                        portal1 = Portal(node, game=self)
+                        self.portals.append(portal1)
+                    else:
+                        print('invalid location')
+                elif event.key == K_x:
+                    if self.pacman.direction != 0:
+                        node = self.pacman.node.neighbors[self.pacman.direction]
+                    if node:  # does not equal none
+                        portal2 = Portal(node, game=self)
+                        self.portals.append(portal2)
+                    else:
+                        print('invalid location')
 
     def checkPelletEvents(self):
         """Handles all the Pellet events"""
@@ -406,14 +438,14 @@ class GameController(object):
         self.move_cursor()
         if self.START_KEY:
             if self.state == 'Start':
-                self.menu = False
                 self.sound.play_startup()
+                self.menu = False
             elif self.state == 'Highscores':
                 self.highscoremenu = True
             elif self.state == 'Exit':
                 exit()
             self.menu = False
-        if self.BACK_KEY: # if we are in highscore menu
+        if self.BACK_KEY:  # if we are in highscore menu
             self.highscoremenu = False
             self.menu = True
 
@@ -428,7 +460,7 @@ class GameController(object):
 
             self.screen.fill(BLACK)
             pacman_image = pygame.transform.scale(
-                pygame.image.load('Pacman image.JPG'), (350, 150))
+                pygame.image.load('images/Pacman image.JPG'), (350, 150))
             self.draw_image(pacman_image, self.mid_w, 100)
 
             self.draw_text('Play Game', 15, self.startx, 450)
@@ -438,7 +470,8 @@ class GameController(object):
 
             self.draw_cursor()
 
-            self.draw_image(self.menu_timer.imagerect(), self.mid_w, self.image_position_menu_y)
+            self.draw_image(self.menu_timer.imagerect(),
+                            self.mid_w, self.image_position_menu_y)
             pygame.display.update()
 
             self.reset_keys()
@@ -457,26 +490,8 @@ class GameController(object):
 
             curr_high_score = self.get_highscore_string()
             self.draw_text(curr_high_score, 15, self.mid_w, self.mid_h)
-            self.draw_text('Press backspace to exit', 15, self.mid_w, self.mid_h + 20)
+            self.draw_text('Press backspace to exit', 15,
+                           self.mid_w, self.mid_h + 20)
             pygame.display.update()
 
             self.reset_keys()
-
-    # def check_menu_events(self):
-    #     for event in pygame.event.get():
-    #         for event in pygame.event.get():
-    #             if event.type == QUIT:
-    #                 exit()
-    #             if event.type == pygame.KEYDOWN:
-    #                 key = event.key
-    #                 if key == pygame.K_RETURN:
-    #                     self.START_KEY = True
-    #                 if key == pygame.K_BACKSPACE:
-    #                     self.BACK_KEY = True
-    #                 if key == pygame.K_DOWN:
-    #                     self.DOWN_KEY = True
-    #                 if key == pygame.K_UP:
-    #                     self.UP_KEY = True
-
-    # def reset_keys(self):
-    #     self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False

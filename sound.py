@@ -13,6 +13,15 @@ class Sound:
         self.death = pygame.mixer.Sound('sounds/pacman_death.wav')
         self.freightsiren = pygame.mixer.Sound('sounds/freightsiren.wav')
 
+        # Set volumes for sounds
+        self.startupsound.set_volume(0.4)
+        self.munchpellet.set_volume(0.5)
+        self.munchfruit.set_volume(0.5)
+        self.ghostsiren.set_volume(0.2)
+        self.freightsiren.set_volume(0.2)
+        self.death.set_volume(0.4)
+        self.munchghost.set_volume(0.5)
+
     def play_ghost_sound(self):
         pygame.mixer.Channel(1).unpause()
         pygame.mixer.Channel(1).play(self.ghostsiren, loops=-1)
