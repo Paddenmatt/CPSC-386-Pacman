@@ -34,17 +34,17 @@ python3 -m pip install -U pygame --user
 python3 -m pip install numpy
 
 # In-Game Controls
-W - UP
-A - Left
-S - DOWN
-D - RIGHT
-SPACEBAR - PAUSE/UNPAUSE
+W - UP <br />
+A - Left <br />
+S - DOWN <br />
+D - RIGHT <br />
+SPACEBAR - PAUSE/UNPAUSE <br />
 
 # Menu Controls
-ARROW UP - UP
-ARROW DOWN - DOWN
-ENTER - SELECT
-BACKSPACE - GO BACK
+ARROW UP - UP <br />
+ARROW DOWN - DOWN <br />
+ENTER - SELECT <br />
+BACKSPACE - GO BACK <br />
 
 # Contributors
 1. Matthew Padden
